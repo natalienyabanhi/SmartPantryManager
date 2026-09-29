@@ -1,116 +1,126 @@
 # Smart Pantry Manager
 
-A Java Android application that suggests recipes based **strictly** on the
-ingredients the user actually has at home, so no shopping trip is ever
-required for a suggested recipe.
+Smart Pantry Manager is an Android application I developed in Java for my Mobile App Development 700 assignment.
 
-## What it does
+The idea behind the app is simple: users can keep track of the ingredients they already have at home, and the app suggests recipes they can make using those ingredients. I wanted the app to be useful for reducing food waste and also help users decide what they can cook without having to buy extra ingredients.
 
-- Track your pantry: add, edit, and delete ingredients (name, quantity,
-  unit, optional expiry date).
-- See a live "Suggested Recipes" list generated from a **strict-matching
-  rule**: a recipe is only suggested if the pantry contains every single
-  ingredient it needs, in at least the required quantity.
-- An optional "Almost There" section highlights recipes missing exactly
-  one ingredient, kept clearly separate from the strict suggestions.
-- View full ingredient lists and preparation steps for any recipe.
-- Adjust settings for expiry alerts and preferred unit system.
-- All data persists locally between sessions.
+## Main Features
 
-## Why SQLite (SQLiteOpenHelper)
+The app allows the user to:
 
-This project uses **SQLite via `SQLiteOpenHelper`** (Section 3.2, option 1)
-rather than Firebase or PostgreSQL, for three reasons:
+- Add ingredients to their pantry
+- View all ingredients currently in the pantry
+- Edit existing ingredients
+- Delete ingredients
+- Enter the quantity, unit and expiry date of an ingredient
+- View recipes they can make with the ingredients they have
+- Open a recipe to see its ingredients and preparation instructions
+- Change settings such as expiry alerts and unit preferences
 
-1. **Offline-first fit**: a pantry tracker is a genuinely personal,
-   single-user tool. There's no need for cloud sync or multi-device
-   access, so a local database avoids unnecessary network dependency and
-   keeps the app fully usable with no internet connection.
-2. **Full control over the matching query**: the strict-matching rule
-   needs to compare pantry rows against recipe ingredient rows directly.
-   SQLite's relational model (three related tables:
-   `pantry_items`, `recipes`, `recipe_ingredients`) maps cleanly onto that
-   comparison without needing a backend API layer.
-3. **Consistency with the module content**: `SQLiteOpenHelper` and
-   `Cursor`-based CRUD were covered directly in the module's persistent
-   data chapter, so this choice lets the implementation demonstrate that
-   material specifically, rather than a Firebase SDK the module didn't
-   teach in depth.
+The pantry information is saved, so the ingredients are still available when the app is closed and opened again.
 
-## Data model
+## Recipe Matching
 
-- `pantry_items` — id, name, quantity, unit, expiry_date (nullable)
-- `recipes` — id, name, instructions
-- `recipe_ingredients` — id, recipe_id (FK → recipes), ingredient_name,
-  quantity, unit
+One of the main parts of this project is the recipe matching feature.
 
-18 recipes are seeded into `recipes`/`recipe_ingredients` automatically the
-first time the app runs (see `RecipeSeeder.java`).
+A recipe is only shown under Suggested Recipes when the user has all the ingredients required for that recipe in the correct quantities.
 
-## Core logic: `IngredientMatcher`
+For example, if a recipe needs four ingredients but the user only has three of them, that recipe will not be suggested.
 
-`com.example.smartpantry.logic.IngredientMatcher` is the single most
-important class in this project. For each recipe it:
+This logic is handled by the `IngredientMatcher` class.
 
-1. Normalises ingredient names (naive stemming, e.g. "tomatoes" → "tomato")
-   so the match isn't broken by simple singular/plural differences.
-2. Converts compatible units onto a common base (grams for mass,
-   millilitres for volume) so "1 kg" in the pantry correctly satisfies a
-   recipe that calls for "500 g".
-3. Only marks a recipe as fully matched if **every** required ingredient
-   is present in at least the required quantity — a single missing or
-   insufficient ingredient excludes the recipe from the main suggestions.
-4. Also reports recipes missing exactly one ingredient, powering the
-   bonus "Almost There" list.
+The matching also deals with some simple differences in ingredient names and compatible measurement units. This helps prevent small differences in the way an ingredient is entered from stopping a recipe from matching.
 
-Unit tests for this logic are in
-`app/src/test/java/com/example/smartpantry/logic/IngredientMatcherTest.java`.
+## Recipes
 
-## Project structure
+The app has 18 recipes that are automatically added to the database.
 
-```
-app/src/main/java/com/example/smartpantry/
-├── MainActivity.java                 // hosts the 3 bottom-nav tabs
-├── AddEditIngredientActivity.java    // create/edit/delete a pantry item
-├── RecipeDetailActivity.java         // full recipe view + match status
-├── ui/
-│   ├── PantryListFragment.java
-│   ├── SuggestedRecipesFragment.java
-│   └── SettingsFragment.java
-├── adapter/
-│   ├── PantryAdapter.java
-│   ├── RecipeAdapter.java
-│   └── RecipeListRow.java
-├── db/
-│   ├── DatabaseHelper.java
-│   └── RecipeSeeder.java
-├── model/
-│   ├── PantryItem.java
-│   ├── Recipe.java
-│   └── RecipeIngredient.java
-└── logic/
-    ├── IngredientMatcher.java
-    └── RecipeMatchResult.java
-```
+Each recipe contains:
 
-## Setup / run instructions
+- A recipe name
+- Required ingredients
+- Required quantities and units
+- Preparation instructions
 
-1. Clone this repository.
-2. Open the project root folder in **Android Studio** (Hedgehog or newer
-   recommended).
-3. Let Gradle sync (it will download the AndroidX/Material dependencies
-   listed in `app/build.gradle`).
-4. Run on an emulator or physical device with **API 21+**.
-5. On first launch the app automatically creates the local database and
-   seeds the recipe catalogue — no setup steps or accounts needed.
+The recipes are added through `RecipeSeeder.java`.
 
-## Out of scope (by design, per the assignment brief)
+## Database
 
-- No Google Maps, mapping SDK, or device location/GPS features.
-- No payment processing.
-- Not published to the Google Play Store.
+I chose SQLite for this project and implemented it using `SQLiteOpenHelper`.
+
+I chose SQLite because the app does not need an internet connection or an online account. Pantry information can be stored directly on the user's device and can still be accessed when the user is offline.
+
+The database contains three main tables:
+
+- `pantry_items` for the user's pantry ingredients
+- `recipes` for recipe information
+- `recipe_ingredients` for the ingredients required by each recipe
+
+SQLite also allows the app to perform the full CRUD operations required for the assignment: Create, Read, Update and Delete.
+
+## Main Screens
+
+The application includes the following screens:
+
+1. Pantry
+2. Add/Edit Ingredient
+3. Suggested Recipes
+4. Recipe Detail
+5. Settings
+
+The bottom navigation bar is used to move between the main sections of the application.
+
+## Technologies Used
+
+This project was developed using:
+
+- Java
+- Android Studio
+- SQLite
+- SQLiteOpenHelper
+- RecyclerView
+- Activities and Fragments
+- Intents
+- Gradle
+- Android Material components
+
+## Project Structure
+
+The main Java files are organised into different packages for the database, models, adapters, user interface and recipe matching logic.
+
+Some of the important classes include:
+
+- `MainActivity.java` – manages the main application and navigation
+- `AddEditIngredientActivity.java` – handles adding and editing pantry ingredients
+- `RecipeDetailActivity.java` – displays the selected recipe
+- `DatabaseHelper.java` – manages the SQLite database
+- `RecipeSeeder.java` – adds the recipes to the database
+- `IngredientMatcher.java` – checks whether the pantry contains everything required for a recipe
+- `PantryAdapter.java` – displays pantry items
+- `RecipeAdapter.java` – displays recipes
+
+## How to Run the Project
+
+1. Clone or download this repository.
+2. Open the Smart Pantry Manager project in Android Studio.
+3. Allow Gradle to sync and download the required dependencies.
+4. Start an Android emulator or connect an Android device.
+5. Run the application from Android Studio.
+
+The database and recipe information are created automatically when the app is first used, so no separate database setup is required.
+
+## Testing
+
+I tested the main functions of the application, including adding, viewing, editing and deleting pantry ingredients.
+
+I also tested the strict recipe matching by adding the ingredients required for a recipe and checking that the recipe appeared under Suggested Recipes. When a required ingredient was removed, the recipe was no longer suggested.
+
+I also tested that pantry information remains saved after closing and reopening the application.
 
 ## Author
 
-Natalie — Mobile App Development 700, Richfield Graduate Institute of
-Technology.
+Natalie Nyabanhi
+
+Mobile App Development 700  
+Richfield Graduate Institute of Technology
+ 
