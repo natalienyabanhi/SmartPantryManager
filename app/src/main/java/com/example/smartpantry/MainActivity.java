@@ -11,14 +11,6 @@ import com.example.smartpantry.ui.SettingsFragment;
 import com.example.smartpantry.ui.SuggestedRecipesFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-/**
- * Single host Activity for the app's three main tabs (Section 3.1 allows
- * either distinct Activities or Fragments navigated through a host
- * Activity - this app uses a host Activity for the three tab screens, and
- * separate Activities for Add/Edit Ingredient and Recipe Detail, so the
- * "minimum of four distinct screens" requirement is exceeded with five
- * screens in total).
- */
 public class MainActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
@@ -32,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
+
         bottomNav.setOnItemSelectedListener(item -> {
             Fragment selected;
             int itemId = item.getItemId();
@@ -51,10 +44,11 @@ public class MainActivity extends AppCompatActivity {
                     .beginTransaction()
                     .replace(R.id.fragment_container, selected)
                     .commit();
+
             return true;
         });
 
-        // Default tab on launch.
+        // Open the Pantry screen when the app starts
         if (savedInstanceState == null) {
             bottomNav.setSelectedItemId(R.id.nav_pantry);
         }
@@ -63,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void setTitle(CharSequence title) {
         super.setTitle(title);
+
         if (toolbar != null) {
             toolbar.setTitle(title);
         }
